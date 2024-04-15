@@ -1,8 +1,10 @@
 import { BudgetForm } from "./components/BudgetForm"
+import { useBudget } from "./Hooks/useBudget"
 
 
 function App() {
 
+  const [state, dispatch]=useBudget()
 
   return (
     <>
