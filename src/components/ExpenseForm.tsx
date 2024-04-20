@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { DraftExpense, Value } from "../type";
 import { categories } from "../data/categories"
 import DatePicker from 'react-date-picker';
@@ -10,7 +10,7 @@ import { useBudget } from "../Hooks/useBudget";
 
 export const ExpenseForm = () => {
 
-  const {dispatch}=useBudget()
+  const {dispatch,state}=useBudget()
 
   const [expense,setExpense]=useState<DraftExpense>({
     amount:0,
@@ -20,6 +20,14 @@ export const ExpenseForm = () => {
   })
 
   const [error,setError]=useState('')
+
+  useEffect(()=>{
+    if(state.editingId){
+      const editingExpense=state.expense.filter(currentExpense=>currentExpense.id===state.editingId)[0]
+      setExpense(editingExpense)
+    }
+
+  },[state.editingId])
 
   const handleChange=(e: React.ChangeEvent<HTMLInputElement>|React.ChangeEvent<HTMLSelectElement>)=> {
 
@@ -45,8 +53,14 @@ export const ExpenseForm = () => {
       setError('Todos los campos son obligatorios')
       return
     }
-    dispatch({type:'add-expense', payload:{expense }
+    if(state.editingId){
+      dispatch({type:'update-expense',payload:{expense:{id:state.editingId,...expense}}})
+
+    }else{
+      dispatch({type:'add-expense', payload:{expense }
     })
+    }
+
     setExpense({
       amount:0,
       expenseName:'',
@@ -62,7 +76,7 @@ export const ExpenseForm = () => {
       onSubmit={handleSubmit}
     >
       <legend className="text-center text-2xl font-black border-b-4 border-blue-500 py-2">
-        Nuevo Gasto
+        {state.editingId ?'Guardar cambios': 'Nuevo Gasto'}
       </legend>
       { error && 
         <ErrorMessage>
@@ -146,7 +160,7 @@ export const ExpenseForm = () => {
       <input
         type="submit"
         className="bg-blue-600 cursor-pointer w-full p-2 text-white font-bold rounded-lg"
-        value={'Registrar Gasto'}
+        value={state.editingId ?'Guardar cambios': 'Registrar Gasto'}
       />
 
     </form>
